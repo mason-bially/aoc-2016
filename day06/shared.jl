@@ -1,7 +1,7 @@
 function aoc_6(input, sort_row_func)
   lines = split(input)
-  w = length(lines[1])
-  a = zeros(UInt32, w, 26)
+  width = length(lines[1])
+  a = zeros(UInt32, width, 26)
   for l in lines
     for (i, x) in enumerate(l)
       a[i, alpha2ord(x)] += 1;
