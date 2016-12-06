@@ -9,14 +9,12 @@ function aoc_2a(input)
   ]
   code = ""
   x, y = 2, 2
-  for l in split(input)
-    for c in l
+  for c in join(split(input), ' ') * " "
       if c == 'U' && y != 1; y -= 1 end
       if c == 'D' && y != 3; y += 1 end
       if c == 'L' && x != 1; x -= 1 end
       if c == 'R' && x != 3; x += 1 end
-    end
-    code *= string(keypad[y, x])
+      if c == ' '; code *= string(keypad[y, x]) end
   end
   return code
 end
