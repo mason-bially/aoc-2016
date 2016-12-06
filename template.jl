@@ -1,5 +1,6 @@
 include("../util/aoc.jl")
-using AoC;
+using AoC
+#include("shared.jl")
 
 function aoc_(input)
 
