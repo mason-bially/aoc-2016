@@ -1,5 +1,9 @@
 Solutions for AOC2016 using julia.
 
+Packages so far (run `Pkg.add("name")` on each):
+* `DataStructures`
+* `Iterators`
+
 I recommend using the [Juno atom addon](https://github.com/JunoLab/uber-juno/blob/master/setup.md). Then just hit `ctrl + shift + enter` on a file to see the result.
 
 ### Organization
