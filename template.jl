@@ -1,3 +1,4 @@
+#workspace()
 include("../util/aoc.jl")
 using AoC
 #include("shared.jl")
