@@ -1,3 +1,4 @@
+workspace()
 include("../util/aoc.jl")
 using AoC
 #include("shared.jl")
@@ -30,14 +31,8 @@ function ip_supports_ssl(s)
   return !isempty(∩(a, b))
 end
 
-function aoc_7b(input)
-  res = 0
-  for l in split(input)
-    if ip_supports_ssl(l)
-      res += 1
-    end
-  end
-  return res
-end
+aoc_7b(input) = input |>
+  split |>
+  _ -> count(ip_supports_ssl, _)
 
 print(aoc_7b(@aoc_input))

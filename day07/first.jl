@@ -31,14 +31,8 @@ function ip_supports_tls(s)
   return found
 end
 
-function aoc_7a(input)
-  res = 0
-  for l in split(input)
-    if ip_supports_tls(l)
-      res += 1
-    end
-  end
-  return res
-end
+aoc_7a(input) = input |>
+  split |>
+  _ -> count(ip_supports_tls, _)
 
 print(aoc_7a(@aoc_input))
