@@ -4,23 +4,21 @@ using AoC
 #include("shared.jl")
 
 function ip_supports_tls(s)
-  valid = true
   found = false
+
+  valid = true
   c0 = '_'; c1 = '_'; c2 = '_'; c3 = '_'
   for c in s
     if c == '['
-      valid = false;
+      valid = false
       c0 = '_'; c1 = '_'; c2 = '_'; c3 = '_'
     end
 
     if c == ']'
-      valid = true;
+      valid = true
     end
 
-    c3 = c2;
-    c2 = c1;
-    c1 = c0;
-    c0 = c;
+    c3 = c2; c2 = c1; c1 = c0; c0 = c;
 
     if c3 != '_' && c0 == c3 && c1 == c2 && c0 != c1
       if !valid

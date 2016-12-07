@@ -1,11 +1,10 @@
-using DataStructures
 include("../util/aoc.jl")
 using AoC
 #include("shared.jl")
 
 function ip_supports_ssl(s)
-  a_l = nil()
-  b_l = nil()
+  a = Set(); b = Set()
+
   valid = true
   c0 = '_'; c1 = '_'; c2 = '_';
   for c in s
@@ -18,29 +17,17 @@ function ip_supports_ssl(s)
       valid = true;
     end
 
-    c2 = c1;
-    c1 = c0;
-    c0 = c;
+    c2 = c1; c1 = c0; c0 = c;
 
     if c2 != '_' && c0 == c2 && c0 != c1
       if !valid
-        b_l = cons("$c1$c0$c1", b_l)
+        union!(b, [ (c1, c0) ])
       else
-        a_l = cons("$c0$c1$c2", a_l)
+        union!(a, [ (c0, c1) ])
       end
     end
   end
-  if a_l == nil() || b_l == nil()
-    return false
-  end
-  for a in a_l
-    for b in b_l
-      if a == b
-        return true;
-      end
-    end
-  end
-  return false
+  return !isempty(∩(a, b))
 end
 
 function aoc_7b(input)
