@@ -1,34 +1,16 @@
 workspace()
+using Iterators
 include("../util/aoc.jl")
 using AoC
 #include("shared.jl")
 
+iter_abba(s) = partition(s, 4, 1) |>
+  _ -> filter(r -> r[1] != r[2] && r[1] == r[4] && r[2] == r[3], _)
+has_abba(s) = !isempty(iter_abba(s))
+
 function ip_supports_tls(s)
-  found = false
-
-  valid = true
-  c0 = '_'; c1 = '_'; c2 = '_'; c3 = '_'
-  for c in s
-    if c == '['
-      valid = false
-      c0 = '_'; c1 = '_'; c2 = '_'; c3 = '_'
-    end
-
-    if c == ']'
-      valid = true
-    end
-
-    c3 = c2; c2 = c1; c1 = c0; c0 = c;
-
-    if c3 != '_' && c0 == c3 && c1 == c2 && c0 != c1
-      if !valid
-        return false
-      else
-        found = true
-      end
-    end
-  end
-  return found
+  ip = split(s, ('[',']')) |> _ -> map(has_abba, _)
+  return !any(ip[2:2:end]) && any(ip[1:2:end])
 end
 
 aoc_7a(input) = input |>

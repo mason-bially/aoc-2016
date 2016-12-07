@@ -1,34 +1,19 @@
 workspace()
+using Iterators
 include("../util/aoc.jl")
 using AoC
 #include("shared.jl")
 
+iter_aba(s) = partition(s, 3, 1) |>
+  _ -> filter(r -> r[1] != r[2] && r[1] == r[3], _)
+has_aba(s) = !isempty(iter_abba(s))
+
+aba_inv(s::Tuple{Char,Char,Char}) = (s[2], s[1], s[2])
+aba_inv(i) = map(aba_inv, i)
+
 function ip_supports_ssl(s)
-  a = Set(); b = Set()
-
-  valid = true
-  c0 = '_'; c1 = '_'; c2 = '_';
-  for c in s
-    if c == '['
-      valid = false;
-      c0 = '_'; c1 = '_'; c2 = '_';
-    end
-
-    if c == ']'
-      valid = true;
-    end
-
-    c2 = c1; c1 = c0; c0 = c;
-
-    if c2 != '_' && c0 == c2 && c0 != c1
-      if !valid
-        union!(b, [ (c1, c0) ])
-      else
-        union!(a, [ (c0, c1) ])
-      end
-    end
-  end
-  return !isempty(∩(a, b))
+  ip = split(s, ('[',']')) |> _ -> map(iter_aba, _)
+  return !isempty(reduce(∪, ip[1:2:end]) ∩ reduce(∪, map(aba_inv, ip[2:2:end])))
 end
 
 aoc_7b(input) = input |>
