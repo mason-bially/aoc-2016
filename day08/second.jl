@@ -5,8 +5,7 @@ using Iterators
 using DataStructures
 include("shared.jl")
 
-function aoc_(input)
+aoc_8b(input) = input |>
+  split |>
 
-end
-
-print(aoc_(@aoc_input))
+print(aoc_8b(@aoc_input))
