@@ -4,8 +4,8 @@ using Iterators
 using DataStructures
 include("shared.jl")
 
-aoc_12b(input) = aoc_12(input, [0, 0, 1, 0, 1])
+aoc_23b(input) = aoc_23(input, [12, 0, 0, 0, 1])
 
-print(aoc_12b(@aoc_input))
+print(aoc_23b(@aoc_input))
 
-# 9227731
+# 479007513

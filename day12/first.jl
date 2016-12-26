@@ -1,4 +1,3 @@
-workspace()
 include("../util/aoc.jl")
 using AoC
 using Iterators

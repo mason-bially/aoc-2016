@@ -1,14 +1,28 @@
 abstract AssemBunny
 abstract AssemBunny12 <: AssemBunny
 
+type AssemBunnyArgument
+  is_reg::Bool
+  value::Int64
+end
+
 type AssemBunnyInstruction
   op::Char
-  arg0::Int64
-  arg1::Int64
+  argc::UInt8
+  arg1::AssemBunnyArgument
+  arg2::AssemBunnyArgument
 end
 
 typealias AssemBunnyCode Array{AssemBunnyInstruction}
 typealias AssemBunnyState Array{Int64,1}
+
+function eval_arg(s::AssemBunnyState, a::AssemBunnyArgument) ::Int64
+  if a.is_reg
+    return s[a.value]
+  else
+    return a.value
+  end
+end
 
 function reg_map(c)::Int64
   if c == 'a'
@@ -24,44 +38,71 @@ function reg_map(c)::Int64
   end
 end
 
-function inst_cpy_vreg(s::AssemBunnyState, n::Int64, r::Int64)
-  s[r] = n
-end
-
-function inst_cpy_rreg(s::AssemBunnyState, r0::Int64, r1::Int64)
-  s[r1] = s[r0]
-end
-
-function inst_inc(s::AssemBunnyState, r::Int64)
-  s[r] += 1
-end
-
-function inst_dec(s::AssemBunnyState, r::Int64)
-  s[r] -= 1
-end
-
-function inst_jnz(s::AssemBunnyState, r::Int64, o::Int64)
-  if r == 0 || s[r] != 0
-    s[5] += o - 1
+function inst_cpy(s::AssemBunnyState, a1::AssemBunnyArgument, a2::AssemBunnyArgument)
+  if a2.is_reg
+    s[a2.value] = eval_arg(s, a1)
   end
 end
 
-function parse_inst(format ::Type{AssemBunny12}, str) ::AssemBunnyInstruction
-  if startswith(str, "cpy")
-    if isalpha(str[5])
-      return AssemBunnyInstruction('r', reg_map(str[5]), reg_map(str[7]))
-    else
-      return AssemBunnyInstruction('v', parse(str[5:end-2]), reg_map(str[end]))
+function inst_inc(s::AssemBunnyState, r::AssemBunnyArgument)
+  if r.is_reg
+    s[r.value] += 1
+  end
+end
+
+function inst_dec(s::AssemBunnyState, r::AssemBunnyArgument)
+  if r.is_reg
+    s[r.value] -= 1
+  end
+end
+
+function inst_jnz(s::AssemBunnyState, r1::AssemBunnyArgument, r2::AssemBunnyArgument)
+  v = eval_arg(s, r1)
+  j = eval_arg(s, r2)
+  if v != 0
+    s[5] += j - 1
+  end
+end
+
+function parse_arg(format, str) ::AssemBunnyArgument
+  if isalpha(str[1])
+    if length(str) == 1
+      return AssemBunnyArgument(true, reg_map(str[1]))
     end
-  elseif startswith(str, "inc")
-    return AssemBunnyInstruction('i', reg_map(str[5]), 0)
-  elseif startswith(str, "dec")
-    return AssemBunnyInstruction('d', reg_map(str[5]), 0)
-  elseif startswith(str, "jnz")
-    return AssemBunnyInstruction('j', reg_map(str[5]), parse(str[7:end]))
   else
-    println(str)
+    return AssemBunnyArgument(false, parse(Int64, str))
   end
+  throw(str)
+end
+
+function parse_op(format ::Type{AssemBunny12}, str)
+  local op::Char
+  local argc::UInt8
+  if (str == "cpy") op = 'c'; argc = 2;
+  elseif (str == "inc") op = '+'; argc = 1;
+  elseif (str == "dec") op = '-'; argc = 1;
+  elseif (str == "jnz") op = 'j'; argc = 2;
+  else
+    throw(str)
+  end
+  return (op, argc)
+end
+
+function parse_inst(format, str) ::AssemBunnyInstruction
+  parts = split(str, ' '; keep=false)
+
+  op, argc = parse_op(format, parts[1])
+
+  arg1 = AssemBunnyArgument(true, 0)
+  arg2 = AssemBunnyArgument(true, 0)
+  if length(parts) > 1
+    arg1 = parse_arg(format, parts[2])
+  end
+  if length(parts) > 2
+    arg2 = parse_arg(format, parts[3])
+  end
+
+  return AssemBunnyInstruction(op, argc, arg1, arg2)
 end
 
 function parse_program(format, input) ::AssemBunnyCode
@@ -74,12 +115,16 @@ function parse_program(format, input) ::AssemBunnyCode
   return ret
 end
 
-function exec_inst(format ::Type{AssemBunny12}, inst ::AssemBunnyInstruction, state ::AssemBunnyState)
-  if inst.op == 'r' inst_cpy_rreg(state, inst.arg0, inst.arg1)
-  elseif inst.op == 'v' inst_cpy_vreg(state, inst.arg0, inst.arg1)
-  elseif inst.op == 'i' inst_inc(state, inst.arg0)
-  elseif inst.op == 'd' inst_dec(state, inst.arg0)
-  elseif inst.op == 'j' inst_jnz(state, inst.arg0, inst.arg1)
+function exec_inst(
+  format::Type{AssemBunny12},
+  inst ::AssemBunnyInstruction,
+  prog ::AssemBunnyCode,
+  state ::AssemBunnyState)
+
+  if inst.op == 'c' inst_cpy(state, inst.arg1, inst.arg2)
+  elseif inst.op == '+' inst_inc(state, inst.arg1)
+  elseif inst.op == '-' inst_dec(state, inst.arg1)
+  elseif inst.op == 'j' inst_jnz(state, inst.arg1, inst.arg2)
   else
     throw(inst)
   end
@@ -92,7 +137,7 @@ function exec_program(format, prog::AssemBunnyCode, state::AssemBunnyState)
     i = state[5]
     state[5] += 1
 
-    exec_inst(format, prog[i], state)
+    exec_inst(format, prog[i], prog, state)
   end
 
   return state
